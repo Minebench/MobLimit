@@ -1,0 +1,11 @@
+name: MobLimit
+version: '${minecrat.plugin.version}'
+main: de.minebench.moblimit.MobLimit
+api-version: 1.13
+authors: [Phoenix616]
+description: Simple plugin to limit mobspawning
+commands:
+  moblimit:
+    description: Main plugin command to get info and set config
+    usage: /<command> reload
+    permission: moblimit.command
