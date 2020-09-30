@@ -32,7 +32,7 @@ class SpawningSettings {
     }
 
     public SpawningSettings(ConfigurationSection config) {
-        this(config.getInt("count", 0), config.getInt("radius", 0), config.getBoolean("dumb", false));
+        this(config.getInt("count", -1), config.getInt("radius", 0), config.getBoolean("dumb", false));
     }
 
     public int getCount() {
