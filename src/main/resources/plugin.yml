@@ -1,5 +1,5 @@
 name: MobLimit
-version: '${minecrat.plugin.version}'
+version: '${minecraft.plugin.version}'
 main: de.minebench.moblimit.MobLimit
 api-version: 1.13
 authors: [Phoenix616]
