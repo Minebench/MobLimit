@@ -48,10 +48,10 @@ public class MobLimitCommand implements CommandExecutor {
                     //set limits
                     if (args[0].equals("chunk")) {
                         plugin.setChunkLimit(value);
-                        sender.sendMessage("Set chunk plugin to " + value);
+                        sender.sendMessage("Set chunk limit to " + value);
                     } else if (args[0].equals("global")) {
                         plugin.setGlobalLimit(value);
-                        sender.sendMessage("Set global plugin to " + value);
+                        sender.sendMessage("Set global limit to " + value);
                     } else if (args[0].equals("breeding")) {
                         plugin.setBreedingLimit(value);
                         sender.sendMessage("Set breeding limit to " + value);
