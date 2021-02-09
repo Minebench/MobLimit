@@ -113,6 +113,18 @@ public final class MobLimit extends JavaPlugin {
         lang = new LanguageManager(this, "en");
         getCommand("moblimit").setExecutor(new MobLimitCommand(this));
         getServer().getPluginManager().registerEvents(new MobLimitListener(this), this);
+
+        checkSpawnTick("monster", getServer().getTicksPerMonsterSpawns(), 10);
+        checkSpawnTick("animals", getServer().getTicksPerAnimalSpawns(), 400);
+        checkSpawnTick("water-animals", getServer().getTicksPerWaterSpawns(), 40);
+        checkSpawnTick("water-ambient", getServer().getTicksPerWaterAmbientSpawns(), 40);
+        checkSpawnTick("ambient", getServer().getTicksPerAmbientSpawns(), 40);
+    }
+
+    private void checkSpawnTick(String type, int ticks, int target) {
+        if (ticks < target) {
+            getLogger().log(Level.WARNING, "Your " + type + " spawning ticks are pretty low (" + ticks + "). Set ticks-per." + type + " to " + target + " in your bukkit.yml to improve performance!");
+        }
     }
 
     @Override
