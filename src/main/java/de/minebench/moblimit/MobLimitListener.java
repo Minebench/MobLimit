@@ -19,8 +19,11 @@ package de.minebench.moblimit;
  */
 
 import com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.event.EventHandler;
@@ -33,10 +36,14 @@ public class MobLimitListener implements Listener {
 
     private final MobLimit plugin;
 
+    private Multimap<CreatureSpawnEvent.SpawnReason, EntityType> preSpawnHandled = MultimapBuilder
+            .enumKeys(CreatureSpawnEvent.SpawnReason.class)
+            .enumSetValues(EntityType.class)
+            .build();
+
     public MobLimitListener(MobLimit plugin) {
         this.plugin = plugin;
     }
-
 
     /**
      * removes all hostile and ambient mobs when loading a chunk
@@ -89,6 +96,7 @@ public class MobLimitListener implements Listener {
         if (settings != null && (settings.getCount() == 0
                 || (settings.getChunk() > -1 && event.getSpawnLocation().getChunk().getEntities().length >= settings.getChunk())
                 || (settings.getCount() > -1 && settings.getRadius() > 0 && event.getSpawnLocation().getNearbyEntitiesByType(event.getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()))) {
+            preSpawnHandled.put(event.getReason(), event.getType());
             event.setCancelled(true);
             event.setShouldAbortSpawn(true);
         }
@@ -96,20 +104,30 @@ public class MobLimitListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void entitySpawn(CreatureSpawnEvent event) {
-        // dumb mobs
-        SpawningSettings spawningSettings = plugin.getSettings(event.getSpawnReason(), event.getEntity().getType());
-        if (spawningSettings != null && spawningSettings.isDumb()) {
-            if (event.getEntity() instanceof Mob) {
-                ((Mob) event.getEntity()).setAware(false);
-            } else {
-                event.getEntity().setAI(false);
+        SpawningSettings settings = plugin.getSettings(event.getSpawnReason(), event.getEntity().getType());
+        if (settings != null) {
+            // handle spawning of mobs that aren't handled by the pre spawn events
+            if (!preSpawnHandled.containsEntry(event.getSpawnReason(), event.getEntity().getType())) {
+                if (settings.getCount() == 0
+                        || (settings.getChunk() > -1 && event.getLocation().getChunk().getEntities().length >= settings.getChunk())
+                        || (settings.getCount() > -1 && settings.getRadius() > 0 && event.getLocation().getNearbyEntitiesByType(event.getEntity().getClass(), settings.getRadius()).size() > settings.getCount())) {
+                    event.setCancelled(true);
+                }
+            }
+            // dumb mobs
+            if (settings.isDumb()) {
+                if (event.getEntity() instanceof Mob) {
+                    ((Mob) event.getEntity()).setAware(false);
+                } else {
+                    event.getEntity().setAI(false);
+                }
             }
         }
         if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.NETHER_PORTAL && event.getEntity() instanceof PigZombie) {
             PigZombie pigZombie = (PigZombie) event.getEntity();
             pigZombie.setAngry(false);
             // Fix farms
-            if (spawningSettings != null && spawningSettings.isDumb()) {
+            if (settings != null && settings.isDumb()) {
                 Block down = event.getLocation().getBlock().getRelative(BlockFace.DOWN);
                 int[][] relatives = {{0, 0}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}, {-1, 1}};
                 for (int[] relative : relatives) {
