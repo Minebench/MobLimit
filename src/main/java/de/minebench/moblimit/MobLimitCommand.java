@@ -52,9 +52,6 @@ public class MobLimitCommand implements CommandExecutor {
                     } else if (args[0].equals("global")) {
                         plugin.setGlobalLimit(value);
                         sender.sendMessage("Set global limit to " + value);
-                    } else if (args[0].equals("breeding")) {
-                        plugin.setBreedingLimit(value);
-                        sender.sendMessage("Set breeding limit to " + value);
                     } else {
                         usage(sender);
                         return true;
@@ -80,10 +77,10 @@ public class MobLimitCommand implements CommandExecutor {
         // TODO: Language
         sender.sendMessage(new String[] {
                 "Usage: /moblimit reload",
-                "Usage: /moblimit set <chunk|global|breeding> <value>",
-                "Usage: /moblimit set purge <0|1>",
+                "Usage: /moblimit set chunk|global <value>",
+                "Usage: /moblimit set purge false|true",
                 "Note: chunklimit counts all entities in a chunk!",
-                "Note: purge will remove hostile mobs on chunkload"
+                "Note: purge will remove hostile/ambient mobs on chunkload"
         });
     }
 }

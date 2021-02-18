@@ -17,19 +17,20 @@ Command                             | Permission                | Description
 
 ## Config
 ```yaml
-# Limit of monsters in a chunk
-chunk: 30
+# Limit of entities in a chunk
+# -1 disables
+chunk: -1
 # Amount of entities that can exist in a certain world at the same time
 # -1 disables
 global: -1
-# Purge all monsters in a chunk on load (ignores named ones)
+# Purge all monsters/ambient mobs in a chunk on load (ignores named ones)
 purge: false
 # You can add more reasons here
 reasons:
-  breeding:
-    # Limit breeding count in chunk
-    chunklimit: 50
   # The spawn reason
+  breeding:
+    # Limit if total entity count (not only the spawned mob) in chunk is above this value
+    chunklimit: 50
   natural:
     # The type of the entity that is spawning
     pillager:

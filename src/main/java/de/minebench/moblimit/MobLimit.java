@@ -195,16 +195,6 @@ public final class MobLimit extends JavaPlugin {
         return this.purge;
     }
 
-    public int getBreedingLimit() {
-        return breedingLimit;
-    }
-
-    public void setBreedingLimit(int limit) {
-        this.breedingLimit = limit;
-        getConfig().set("reasons.breeding.chunklimit", breedingLimit);
-        saveConfig();
-    }
-
     public Map<CreatureSpawnEvent.SpawnReason, ReasonSettings> getSpawningSettings() {
         return spawningSettings;
     }
@@ -251,9 +241,6 @@ public final class MobLimit extends JavaPlugin {
                 message.addAll(reasonValues);
             }
         }
-        Collections.addAll(message,
-                "Breeding Chunk Limit: " + getBreedingLimit()
-        );
         return message;
     }
 

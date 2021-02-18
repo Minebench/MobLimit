@@ -23,16 +23,18 @@ import org.bukkit.configuration.ConfigurationSection;
 class SpawningSettings {
     private final int count;
     private final int radius;
+    private final int chunk;
     private final boolean dumb;
 
-    public SpawningSettings(int count, int radius, boolean dumb) {
+    public SpawningSettings(int count, int radius, int chunk, boolean dumb) {
         this.count = count;
         this.radius = radius;
+        this.chunk = chunk;
         this.dumb = dumb;
     }
 
     public SpawningSettings(ConfigurationSection config) {
-        this(config.getInt("count", -1), config.getInt("radius", 0), config.getBoolean("dumb", false));
+        this(config.getInt("count", -1), config.getInt("radius", 0), config.getInt("chunklimit", -1), config.getBoolean("dumb", false));
     }
 
     public int getCount() {
@@ -41,6 +43,10 @@ class SpawningSettings {
 
     public int getRadius() {
         return radius;
+    }
+
+    public int getChunk() {
+        return chunk;
     }
 
     public boolean isDumb() {

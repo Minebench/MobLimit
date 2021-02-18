@@ -21,8 +21,6 @@ package de.minebench.moblimit;
 import com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Animals;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.event.EventHandler;
@@ -69,18 +67,18 @@ public class MobLimitListener implements Listener {
     /**
      * prevent mobs from naturally spawning when above global or chunklimit
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void entitySpawn(PreCreatureSpawnEvent event) {
         if (event.getReason() == CreatureSpawnEvent.SpawnReason.NATURAL) {
             //global limit
-            if (plugin.getGlobalLimit() > 0 && event.getSpawnLocation().getWorld().getEntityCount() > plugin.getGlobalLimit()) {
+            if (plugin.getGlobalLimit() >= 0 && event.getSpawnLocation().getWorld().getEntityCount() > plugin.getGlobalLimit()) {
                 event.setCancelled(true);
                 event.setShouldAbortSpawn(true);
                 return;
             }
 
             //chunk limit
-            if (plugin.getChunkLimit() > 0 && event.getSpawnLocation().getChunk().getEntities().length > plugin.getChunkLimit()) {
+            if (plugin.getChunkLimit() >= 0 && event.getSpawnLocation().getChunk().getEntities().length > plugin.getChunkLimit()) {
                 event.setCancelled(true);
                 event.setShouldAbortSpawn(true);
                 return;
@@ -88,19 +86,24 @@ public class MobLimitListener implements Listener {
         }
 
         SpawningSettings settings = plugin.getSettings(event.getReason(), event.getType());
-        if (settings != null && (settings.getCount() == 0 || (settings.getRadius() > 0
-                && event.getSpawnLocation().getNearbyEntitiesByType(event.getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()))) {
+        if (settings != null && (settings.getCount() == 0
+                || (settings.getChunk() > -1 && event.getSpawnLocation().getChunk().getEntities().length >= settings.getChunk())
+                || (settings.getCount() > -1 && settings.getRadius() > 0 && event.getSpawnLocation().getNearbyEntitiesByType(event.getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()))) {
             event.setCancelled(true);
             event.setShouldAbortSpawn(true);
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void entitySpawn(CreatureSpawnEvent event) {
         // dumb mobs
         SpawningSettings spawningSettings = plugin.getSettings(event.getSpawnReason(), event.getEntity().getType());
-        if (spawningSettings != null && spawningSettings.isDumb() && event.getEntity() instanceof Mob) {
-            ((Mob) event.getEntity()).setAware(false);
+        if (spawningSettings != null && spawningSettings.isDumb()) {
+            if (event.getEntity() instanceof Mob) {
+                ((Mob) event.getEntity()).setAware(false);
+            } else {
+                event.getEntity().setAI(false);
+            }
         }
         if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.NETHER_PORTAL && event.getEntity() instanceof PigZombie) {
             PigZombie pigZombie = (PigZombie) event.getEntity();
@@ -120,21 +123,30 @@ public class MobLimitListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBreeding(EntityBreedEvent event) {
-        if (plugin.getBreedingLimit() > 0 && event.getBreeder() != null) {
-            int count = 0;
-            for (Entity e : event.getEntity().getLocation().getChunk().getEntities()) {
-                if (e instanceof Animals) {
-                    count++;
-                    if (count > plugin.getBreedingLimit()) {
-                        event.setCancelled(true);
-                        event.setExperience(0);
-                        event.getBreeder().sendMessage(plugin.getMessage(
-                            event.getBreeder(), "aborted-breeading", "amount", String.valueOf(count)
-                        ));
+        if (event.getBreeder() != null) {
+            SpawningSettings settings = plugin.getSettings(CreatureSpawnEvent.SpawnReason.BREEDING, event.getEntity().getType());
+            if (settings != null) {
+                int count = -1;
+                if (settings.getChunk() > -1 && event.getEntity().getLocation().getChunk().getEntities().length >= settings.getChunk()) {
+                    count = settings.getChunk();
+                } else if (settings.getCount() > -1 && settings.getRadius() > 0
+                        && event.getEntity().getLocation().getNearbyEntitiesByType(event.getEntity().getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()) {
+                    count = settings.getCount();
+                }
+                if (count > -1) {
+                    event.setCancelled(true);
+                    event.setExperience(0);
+                    event.getBreeder().sendMessage(plugin.getMessage(
+                            event.getBreeder(), "aborted-breeding", "amount", String.valueOf(count)
+                    ));
+                } else if (settings.isDumb()) {
+                    if (event.getEntity() instanceof Mob) {
+                        ((Mob) event.getEntity()).setAware(false);
+                    } else {
+                        event.getEntity().setAI(false);
                     }
-                    break;
                 }
             }
         }
