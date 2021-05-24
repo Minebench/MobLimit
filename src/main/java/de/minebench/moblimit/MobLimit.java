@@ -100,15 +100,12 @@ public final class MobLimit extends JavaPlugin {
     private int globalLimit = 2500;
     private boolean purge = true;
 
-    private int breedingLimit = 0;
-
     private Map<CreatureSpawnEvent.SpawnReason, ReasonSettings> spawningSettings;
 
     private LanguageManager lang;
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
         loadConfig();
         lang = new LanguageManager(this, "en");
         getCommand("moblimit").setExecutor(new MobLimitCommand(this));
@@ -127,11 +124,6 @@ public final class MobLimit extends JavaPlugin {
         }
     }
 
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-    }
-
     public void loadConfig() {
         saveDefaultConfig();
         reloadConfig();
@@ -139,13 +131,11 @@ public final class MobLimit extends JavaPlugin {
         chunkLimit = getConfig().getInt("chunk");
         globalLimit = getConfig().getInt("global");
 
-        breedingLimit = getConfig().getInt("reasons.breeding.chunklimit");
-
         purge = getConfig().getBoolean("purge");
 
         spawningSettings = new EnumMap<>(CreatureSpawnEvent.SpawnReason.class);
         for (CreatureSpawnEvent.SpawnReason spawnReason : CreatureSpawnEvent.SpawnReason.values()) {
-            if (getConfig().contains(spawnReason.name().toLowerCase()) && getConfig().isConfigurationSection("reasons." + spawnReason.name().toLowerCase())) {
+            if (getConfig().isConfigurationSection("reasons." + spawnReason.name().toLowerCase())) {
                 spawningSettings.put(spawnReason, new ReasonSettings(getConfig().getConfigurationSection("reasons." + spawnReason.name().toLowerCase())));
             }
         }
@@ -169,10 +159,6 @@ public final class MobLimit extends JavaPlugin {
 
     public int getGlobalLimit() {
         return globalLimit;
-    }
-
-    public MobLimit getMobLimit() {
-        return this;
     }
 
     public void setChunkLimit(int chunkLimit) {
@@ -211,7 +197,10 @@ public final class MobLimit extends JavaPlugin {
         );
         for (Map.Entry<CreatureSpawnEvent.SpawnReason, MobLimit.ReasonSettings> entry : getSpawningSettings().entrySet()) {
             List<String> reasonValues = new ArrayList<>();
-            if (entry.getValue().getCount() > 0) {
+            if (entry.getValue().getChunk() > -1) {
+                reasonValues.add("  Chunk Limit: " + entry.getValue().getChunk());
+            }
+            if (entry.getValue().getCount() > -1) {
                 reasonValues.add("  Count: " + entry.getValue().getCount());
             }
             if (entry.getValue().getRadius() > 0) {
@@ -222,7 +211,10 @@ public final class MobLimit extends JavaPlugin {
             }
             for (Map.Entry<EntityType, SpawningSettings> settingsEntry : entry.getValue().getSpawningSettings().entrySet()) {
                 List<String> typeReasonValues = new ArrayList<>();
-                if (settingsEntry.getValue().getCount() > 0) {
+                if (settingsEntry.getValue().getChunk() > -1) {
+                    typeReasonValues.add("    Chunk Limit: " + settingsEntry.getValue().getChunk());
+                }
+                if (settingsEntry.getValue().getCount() > -1) {
                     typeReasonValues.add("    Count: " + settingsEntry.getValue().getCount());
                 }
                 if (settingsEntry.getValue().getRadius() > 0) {

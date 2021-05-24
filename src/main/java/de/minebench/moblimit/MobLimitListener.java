@@ -60,13 +60,8 @@ public class MobLimitListener implements Listener {
             //remove
             if (MobLimit.HOSTILE_MOBS.contains(e.getType().getEntityClass()) || MobLimit.AMBIENT_MOBS.contains(e.getType().getEntityClass())) {
                 if (e.getCustomName() == null) {
-                    //DEBUG
-                    //plugin.getLogger().info("Removing "+e.getClass().toString());
                     e.remove();
                 }
-            } else {
-                //DEBUG
-                //plugin.getLogger().info("NOT removing "+e.getClass().toString());
             }
         }
     }
