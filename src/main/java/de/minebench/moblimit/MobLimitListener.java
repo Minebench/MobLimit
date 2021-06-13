@@ -87,11 +87,11 @@ public class MobLimitListener implements Listener {
             }
         }
 
+        preSpawnHandled.put(event.getReason(), event.getType());
         SpawningSettings settings = plugin.getSettings(event.getReason(), event.getType());
         if (settings != null && (settings.getCount() == 0
                 || (settings.getChunk() > -1 && event.getSpawnLocation().getChunk().getEntities().length >= settings.getChunk())
                 || (settings.getCount() > -1 && settings.getRadius() > 0 && event.getSpawnLocation().getNearbyEntitiesByType(event.getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()))) {
-            preSpawnHandled.put(event.getReason(), event.getType());
             event.setCancelled(true);
             event.setShouldAbortSpawn(true);
         }
