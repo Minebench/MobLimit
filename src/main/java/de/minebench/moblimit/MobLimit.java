@@ -18,6 +18,11 @@ package de.minebench.moblimit;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import de.minebench.moblimit.adapter.PaperAdapter;
+import de.minebench.moblimit.adapter.PlatformAdapter;
+import de.minebench.moblimit.adapter.SpigotAdapter;
 import de.themoep.minedown.MineDown;
 import de.themoep.utils.lang.bukkit.LanguageManager;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -77,6 +82,8 @@ public final class MobLimit extends JavaPlugin {
     static final Set<Class<? extends Entity>> PEACEFUL_MOBS = new HashSet<>(Arrays.asList(
             EntityType.VILLAGER.getEntityClass()
     ));
+    static final boolean IS_PAPER;
+    public static final Multimap<CreatureSpawnEvent.SpawnReason, EntityType> PRE_SPAWN_HANDLED;
 
     static {
         NONSOLID_SOLID.addAll(Tag.TRAPDOORS.getValues());
@@ -94,6 +101,19 @@ public final class MobLimit extends JavaPlugin {
                 WATER_MOBS.add(type.getEntityClass());
             }
         }
+
+        boolean hasPreSpawnEvent = false;
+        Multimap<CreatureSpawnEvent.SpawnReason, EntityType> preSpawnHandled = null;
+        try {
+            Class.forName("com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent");
+            hasPreSpawnEvent = true;
+            preSpawnHandled = MultimapBuilder
+                    .enumKeys(CreatureSpawnEvent.SpawnReason.class)
+                    .enumSetValues(EntityType.class)
+                    .build();
+        } catch (ClassNotFoundException ignored) {}
+        IS_PAPER = hasPreSpawnEvent;
+        PRE_SPAWN_HANDLED = preSpawnHandled;
     }
 
     private int chunkLimit = 20;
@@ -103,6 +123,7 @@ public final class MobLimit extends JavaPlugin {
     private Map<CreatureSpawnEvent.SpawnReason, ReasonSettings> spawningSettings;
 
     private LanguageManager lang;
+    private PlatformAdapter platformAdapter;
 
     @Override
     public void onEnable() {
@@ -110,6 +131,13 @@ public final class MobLimit extends JavaPlugin {
         lang = new LanguageManager(this, "en");
         getCommand("moblimit").setExecutor(new MobLimitCommand(this));
         getServer().getPluginManager().registerEvents(new MobLimitListener(this), this);
+        if (IS_PAPER) {
+            getLogger().log(Level.INFO, "Paper detected. Using more efficient events and methods.");
+            getServer().getPluginManager().registerEvents(new PaperAdapter(this), this);
+            platformAdapter = new PaperAdapter(this);
+        } else {
+            platformAdapter = new SpigotAdapter(this);
+        }
 
         checkSpawnTick("monster", getServer().getTicksPerMonsterSpawns(), 10);
         checkSpawnTick("animals", getServer().getTicksPerAnimalSpawns(), 400);
@@ -143,7 +171,7 @@ public final class MobLimit extends JavaPlugin {
 
     }
 
-    SpawningSettings getSettings(CreatureSpawnEvent.SpawnReason reason, EntityType type) {
+    public SpawningSettings getSettings(CreatureSpawnEvent.SpawnReason reason, EntityType type) {
         ReasonSettings reasonSettings = spawningSettings.get(reason);
         if (reasonSettings != null) {
             return reasonSettings.getSpawningSettings().getOrDefault(type, reasonSettings);
@@ -238,6 +266,10 @@ public final class MobLimit extends JavaPlugin {
 
     public BaseComponent[] getMessage(CommandSender sender, String key, String... replacements) {
         return MineDown.parse(lang.getConfig(sender).get(key), replacements);
+    }
+
+    public PlatformAdapter getPlatformAdapter() {
+        return platformAdapter;
     }
 
     class ReasonSettings extends SpawningSettings {

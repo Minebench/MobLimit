@@ -20,7 +20,7 @@ package de.minebench.moblimit;
 
 import org.bukkit.configuration.ConfigurationSection;
 
-class SpawningSettings {
+public class SpawningSettings {
     private final int count;
     private final int radius;
     private final int chunk;

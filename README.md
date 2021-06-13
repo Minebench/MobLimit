@@ -1,6 +1,6 @@
 # MobLimit
 
-Simple Paper plugin to limit mob spawning under certain conditions.
+Simple Spigot and Paper plugin to limit mob spawning under certain conditions.
 
 Can also remove the AI of mobs while spawning (make them "dumb") while trying to still keep certain mob farm types working.
 

@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.minebench</groupId>
-    <artifactId>plugin</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <artifactId>moblimit</artifactId>
+    <version>1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>MobLimit</name>
@@ -22,22 +22,12 @@
 
     <repositories>
         <repository>
-            <id>destroystokyo-repo</id>
-            <url>https://repo.destroystokyo.com/repository/maven-public/</url>
-        </repository>
-        <repository>
             <id>minebench</id>
             <url>https://repo.minebench.de/</url>
         </repository>
     </repositories>
 
     <dependencies>
-        <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.16.5-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>de.themoep.utils</groupId>
             <artifactId>lang-bukkit</artifactId>
@@ -47,7 +37,7 @@
         <dependency>
             <groupId>de.themoep</groupId>
             <artifactId>minedown</artifactId>
-            <version>1.7.0-SNAPSHOT</version>
+            <version>1.7.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -63,8 +53,12 @@
         </resources>
         <plugins>
             <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+            <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.4</version>
                 <configuration>
                     <minimizeJar>true</minimizeJar>
                     <relocations>
@@ -91,6 +85,64 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <property>
+                    <name>!testprofile</name>
+                </property>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>paper-repo</id>
+                    <url>https://papermc.io/repo/repository/maven-public/</url>
+                </repository>
+            </repositories>
+            <dependencies>
+                <dependency>
+                    <groupId>com.destroystokyo.paper</groupId>
+                    <artifactId>paper-api</artifactId>
+                    <version>1.16.5-R0.1-SNAPSHOT</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>spigot</id>
+            <activation>
+                <property>
+                    <name>testprofile</name>
+                    <value>spigot</value>
+                </property>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>spigotmc-repo</id>
+                    <url>https://hub.spigotmc.org/nexus/content/groups/public</url>
+                </repository>
+            </repositories>
+            <dependencies>
+                <dependency>
+                    <groupId>org.spigotmc</groupId>
+                    <artifactId>spigot-api</artifactId>
+                    <version>1.16.5-R0.1-SNAPSHOT</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <finalName>${project.name}-Spigot</finalName>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/Paper*.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>static_build_number</id>
             <activation>
