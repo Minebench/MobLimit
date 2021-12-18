@@ -26,6 +26,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
+import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 
 public class MobLimitListener implements Listener {
@@ -137,6 +138,26 @@ public class MobLimitListener implements Listener {
                         event.getEntity().setAI(false);
                     }
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlace(EntityPlaceEvent event) {
+        SpawningSettings settings = plugin.getSettings(CreatureSpawnEvent.SpawnReason.CUSTOM, event.getEntity().getType());
+        if (settings != null) {
+            int count = -1;
+            if (settings.getChunk() > -1 && event.getEntity().getLocation().getChunk().getEntities().length >= settings.getChunk()) {
+                count = settings.getChunk();
+            } else if (settings.getCount() > -1 && settings.getRadius() > 0
+                    && plugin.getPlatformAdapter().getNearbyEntitiesByType(event.getEntity().getLocation(), event.getEntity().getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()) {
+                count = settings.getCount();
+            }
+            if (count > -1) {
+                event.setCancelled(true);
+                event.getPlayer().spigot().sendMessage(plugin.getMessage(
+                        event.getPlayer(), "aborted-place", "amount", String.valueOf(count)
+                ));
             }
         }
     }

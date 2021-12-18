@@ -167,6 +167,9 @@ public final class MobLimit extends JavaPlugin {
                 spawningSettings.put(spawnReason, new ReasonSettings(getConfig().getConfigurationSection("reasons." + spawnReason.name().toLowerCase())));
             }
         }
+        if (getConfig().isConfigurationSection("reasons.place")) {
+            spawningSettings.put(CreatureSpawnEvent.SpawnReason.CUSTOM, new ReasonSettings(getConfig().getConfigurationSection("reasons.place")));
+        }
         getLogger().log(Level.INFO, String.join("\n", getCurrentStateMessage()));
 
     }

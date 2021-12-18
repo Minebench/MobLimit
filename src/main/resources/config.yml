@@ -32,3 +32,10 @@ reasons:
   village_defense:
     count: 1
     radius: 16
+  place:
+    boat:
+      count: 10
+      radius: 6
+    armor_stand:
+      count: 10
+      radius: 2
