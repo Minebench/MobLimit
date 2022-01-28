@@ -1,6 +1,6 @@
 # MobLimit
 
-Simple Spigot and Paper plugin to limit mob spawning under certain conditions.
+Simple Spigot and Paper plugin to limit mob spawning and entity placement depending on the amount of entities around or in a chunk.
 
 Can also remove the AI of mobs while spawning (make them "dumb") while trying to still keep certain mob farm types working.
 
@@ -52,6 +52,22 @@ reasons:
     count: 1
     radius: 16
 ```
+
+## Why no TPS settings?
+Unlike other popular limiter plugins this plugin does not have option to specify limits depending on the ticks per second
+that the server is able to run it. This has multiple reasons:
+
+- The main one being that arbitrarily limiting mobs to a certain amount just because the ticks go down doesn't actually
+  solve the underlying problem (too many mobs being spawned to begin with) and you should adjust your spawning ticks as
+  well as radius max counts to a value that results in stable gameplay in the first place without tick loss as otherwise
+  the server will bounce between spawning too many mobs to not spawning them at all again and again resulting in even less
+  stable TPS.
+- Arbitrarily limiting spawn rates based on ticks only hides the problem and makes it more difficult for you to figure out
+  what actually causes the state which causes your server to lag to begin with. (Most likely too high mob spawning ticks)
+- TPS is a terrible metric. You will not notice that your server is unstable if it still barily manages 20 ticks per second.
+  MSPT (Milliseconds per tick) is the better metric as it tells you how long one tick actually took to process (up to 50ms
+  per tick results in 20 ticks per second) which makes it easier to notice unstable behaviour fast.
+- TL;DR: If your server doesn't run at 20tps then you should fix that by adjusting your server settings.
 
 ## Downloads
 This plugin can currently be downloaded from the [Minebench.de Jenkins server](https://ci.minebench.de/job/MobLimit/).
