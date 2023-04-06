@@ -37,27 +37,6 @@ public class MobLimitListener implements Listener {
         this.plugin = plugin;
     }
 
-    /**
-     * removes all hostile and ambient mobs when loading a chunk
-     *
-     * @param event
-     */
-    @EventHandler
-    public void chunkLoad(ChunkLoadEvent event) {
-        if (!plugin.isPurging()) {
-            return;
-        } //purging disabled
-
-        for (org.bukkit.entity.Entity e : event.getChunk().getEntities()) {
-            //remove
-            if (MobLimit.HOSTILE_MOBS.contains(e.getType().getEntityClass()) || MobLimit.AMBIENT_MOBS.contains(e.getType().getEntityClass())) {
-                if (e.getCustomName() == null) {
-                    e.remove();
-                }
-            }
-        }
-    }
-
     @EventHandler(ignoreCancelled = true)
     public void entitySpawn(CreatureSpawnEvent event) {
         boolean preSpawnHandled = MobLimit.IS_PAPER && MobLimit.PRE_SPAWN_HANDLED.containsEntry(event.getSpawnReason(), event.getEntity().getType());

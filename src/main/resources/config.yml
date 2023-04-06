@@ -4,8 +4,6 @@ chunk: -1
 # Amount of entities that can exist in a certain world at the same time
 # -1 disables
 global: -1
-# Purge all monsters/ambient mobs in a chunk on load (ignores named ones)
-purge: false
 # You can add more reasons here
 reasons:
   # The spawn reason
