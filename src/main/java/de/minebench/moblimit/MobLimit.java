@@ -116,6 +116,7 @@ public final class MobLimit extends JavaPlugin {
         PRE_SPAWN_HANDLED = preSpawnHandled;
     }
 
+    private boolean debug = true;
     private int chunkLimit = 20;
     private int globalLimit = 2500;
     private boolean purge = true;
@@ -156,6 +157,7 @@ public final class MobLimit extends JavaPlugin {
         saveDefaultConfig();
         reloadConfig();
 
+        debug = getConfig().getBoolean("debug");
         chunkLimit = getConfig().getInt("chunk");
         globalLimit = getConfig().getInt("global");
 
@@ -273,6 +275,16 @@ public final class MobLimit extends JavaPlugin {
 
     public PlatformAdapter getPlatformAdapter() {
         return platformAdapter;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void logDebug(String message) {
+        if (debug) {
+            getLogger().info("[Debug] " + message);
+        }
     }
 
     class ReasonSettings extends SpawningSettings {

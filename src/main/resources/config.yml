@@ -1,3 +1,4 @@
+debug: true
 # Limit of entities in a chunk
 # -1 disables
 chunk: -1

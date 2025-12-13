@@ -44,6 +44,7 @@ public class PaperAdapter implements Listener, PlatformAdapter {
             if (plugin.getGlobalLimit() >= 0 && event.getSpawnLocation().getWorld().getEntityCount() > plugin.getGlobalLimit()) {
                 event.setCancelled(true);
                 event.setShouldAbortSpawn(true);
+                if (plugin.isDebug()) plugin.logDebug("Cancelled PreCreatureSpawnEvent " + event.getReason() + " for " + event.getType() + " at " + event.getSpawnLocation() + " due to global limit: " + event.getSpawnLocation().getWorld().getEntityCount() + " > " + plugin.getGlobalLimit());
                 return;
             }
 
@@ -51,16 +52,29 @@ public class PaperAdapter implements Listener, PlatformAdapter {
             if (plugin.getChunkLimit() >= 0 && event.getSpawnLocation().getChunk().getEntities().length > plugin.getChunkLimit()) {
                 event.setCancelled(true);
                 event.setShouldAbortSpawn(true);
+                if (plugin.isDebug()) plugin.logDebug("Cancelled CreatureSpawnEvent " + event.getReason() + " for " + event.getType() + " at " + event.getSpawnLocation() + " due to chunk limit: " + event.getSpawnLocation().getChunk().getEntities().length + " > " + plugin.getChunkLimit());
                 return;
             }
         }
 
         SpawningSettings settings = plugin.getSettings(event.getReason(), event.getType());
-        if (settings != null && (settings.getCount() == 0
-                || (settings.getChunk() > -1 && event.getSpawnLocation().getChunk().getEntities().length >= settings.getChunk())
-                || (settings.getCount() > -1 && settings.getRadius() > 0 && event.getSpawnLocation().getNearbyEntitiesByType(event.getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()))) {
-            event.setCancelled(true);
-            event.setShouldAbortSpawn(true);
+        if (settings != null) {
+            if (settings.getCount() == 0) {
+                event.setCancelled(true);
+                event.setShouldAbortSpawn(true);
+                if (plugin.isDebug()) plugin.logDebug("Cancelled PreCreatureSpawnEvent " + event.getReason() + " for " + event.getType() + " at " + event.getSpawnLocation() + " due to being limited to 0 in the reason settings");
+            } else if (settings.getChunk() > -1 && event.getSpawnLocation().getChunk().getEntities().length >= settings.getChunk()) {
+                event.setCancelled(true);
+                event.setShouldAbortSpawn(true);
+                if (plugin.isDebug()) plugin.logDebug("Cancelled PreCreatureSpawnEvent " + event.getReason() + " for " + event.getType() + " at " + event.getSpawnLocation() + " due to chunk limit: " + event.getSpawnLocation().getChunk().getEntities().length + " > " + plugin.getChunkLimit());
+            } else if (settings.getCount() > -1 && settings.getRadius() > 0) {
+                int radiusCount = getNearbyEntitiesByType(event.getSpawnLocation(), event.getType().getEntityClass(), settings.getRadius()).size();
+                if (radiusCount > settings.getCount()) {
+                    event.setCancelled(true);
+                    event.setShouldAbortSpawn(true);
+                    if (plugin.isDebug()) plugin.logDebug("Cancelled PreCreatureSpawnEvent " + event.getReason() + " for " + event.getType() + " at " + event.getSpawnLocation() + " due to radius " + settings.getRadius() + " limit: " + radiusCount + " > " + settings.getCount());
+                }
+            }
         }
     }
 

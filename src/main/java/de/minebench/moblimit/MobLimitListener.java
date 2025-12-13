@@ -44,12 +44,14 @@ public class MobLimitListener implements Listener {
             //global limit
             if (plugin.getGlobalLimit() >= 0 && event.getLocation().getWorld().getEntityCount() > plugin.getGlobalLimit()) {
                 event.setCancelled(true);
+                if (plugin.isDebug()) plugin.logDebug("Cancelled CreatureSpawnEvent " + event.getSpawnReason() + " for " + event.getEntityType() + " at " + event.getLocation() + " due to global limit: " + event.getLocation().getWorld().getEntityCount() + " > " + plugin.getGlobalLimit());
                 return;
             }
 
             //chunk limit
             if (plugin.getChunkLimit() >= 0 && event.getLocation().getChunk().getEntities().length > plugin.getChunkLimit()) {
                 event.setCancelled(true);
+                if (plugin.isDebug()) plugin.logDebug("Cancelled CreatureSpawnEvent " + event.getSpawnReason() + " for " + event.getEntityType() + " at " + event.getLocation() + " due to chunk limit: " + event.getLocation().getChunk().getEntities().length + " > " + plugin.getChunkLimit());
                 return;
             }
         }
@@ -58,11 +60,21 @@ public class MobLimitListener implements Listener {
         if (settings != null) {
             // handle spawning of mobs that aren't handled by the pre spawn events
             if (!preSpawnHandled) {
-                if (settings.getCount() == 0
-                        || (settings.getChunk() > -1 && event.getLocation().getChunk().getEntities().length >= settings.getChunk())
-                        || (settings.getCount() > -1 && settings.getRadius() > 0 && plugin.getPlatformAdapter().getNearbyEntitiesByType(event.getLocation(), event.getEntity().getClass(), settings.getRadius()).size() > settings.getCount())) {
+                if (settings.getCount() == 0) {
                     event.setCancelled(true);
+                    if (plugin.isDebug()) plugin.logDebug("Cancelled CreatureSpawnEvent " + event.getSpawnReason() + " for " + event.getEntityType() + " at " + event.getLocation() + " due to being limited to 0 in the reason settings");
                     return;
+                } else if (settings.getChunk() > -1 && event.getLocation().getChunk().getEntities().length >= settings.getChunk()) {
+                    event.setCancelled(true);
+                    if (plugin.isDebug()) plugin.logDebug("Cancelled CreatureSpawnEvent " + event.getSpawnReason() + " for " + event.getEntityType() + " at " + event.getLocation() + " due to chunk limit: " + event.getLocation().getChunk().getEntities().length + " > " + plugin.getChunkLimit());
+                    return;
+                } else if (settings.getCount() > -1 && settings.getRadius() > 0) {
+                    int radiusCount = plugin.getPlatformAdapter().getNearbyEntitiesByType(event.getLocation(), event.getEntity().getClass(), settings.getRadius()).size();
+                    if (radiusCount > settings.getCount()) {
+                        event.setCancelled(true);
+                        if (plugin.isDebug()) plugin.logDebug("Cancelled CreatureSpawnEvent " + event.getSpawnReason() + " for " + event.getEntityType() + " at " + event.getLocation() + " due to radius " + settings.getRadius() + " limit: " + radiusCount + " > " + settings.getCount());
+                        return;
+                    }
                 }
             }
             // dumb mobs
@@ -72,6 +84,7 @@ public class MobLimitListener implements Listener {
                 } else {
                     event.getEntity().setAI(false);
                 }
+                if (plugin.isDebug()) plugin.logDebug("Setting " + event.getEntityType() + " at " + event.getLocation() + " spawned with " + event.getSpawnReason() + " as dumb");
             }
         }
         if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.NETHER_PORTAL && event.getEntity() instanceof PigZombie) {
@@ -85,6 +98,7 @@ public class MobLimitListener implements Listener {
                     Block rel = down.getRelative(relative[0], 0, relative[1]);
                     if (MobLimit.NONSOLID_SOLID.contains(rel.getType())) {
                         pigZombie.teleport(rel.getLocation().add(0.5, 0.5, 0.5));
+                        if (plugin.isDebug()) plugin.logDebug("Teleported dumb " + event.getEntityType() + " from " + event.getLocation() + " to " + rel.getLocation().add(0.5, 0.5, 0.5));
                         break;
                     }
                 }
@@ -100,9 +114,11 @@ public class MobLimitListener implements Listener {
                 int count = -1;
                 if (settings.getChunk() > -1 && event.getEntity().getLocation().getChunk().getEntities().length >= settings.getChunk()) {
                     count = settings.getChunk();
+                    if (plugin.isDebug()) plugin.logDebug("Cancelled breeding of " + event.getEntityType() + " at " + event.getEntity().getLocation() + " due to chunk count");
                 } else if (settings.getCount() > -1 && settings.getRadius() > 0
                         && plugin.getPlatformAdapter().getNearbyEntitiesByType(event.getEntity().getLocation(), event.getEntity().getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()) {
                     count = settings.getCount();
+                    if (plugin.isDebug()) plugin.logDebug("Cancelled breeding of " + event.getEntityType() + " at " + event.getEntity().getLocation() + " due to radius " + settings.getRadius() + " count");
                 }
                 if (count > -1) {
                     event.setCancelled(true);
@@ -116,6 +132,7 @@ public class MobLimitListener implements Listener {
                     } else {
                         event.getEntity().setAI(false);
                     }
+                    if (plugin.isDebug()) plugin.logDebug("Setting " + event.getEntityType() + " at " + event.getEntity().getLocation() + " dumb due to breeding setting");
                 }
             }
         }
@@ -128,9 +145,11 @@ public class MobLimitListener implements Listener {
             int count = -1;
             if (settings.getChunk() > -1 && event.getEntity().getLocation().getChunk().getEntities().length >= settings.getChunk()) {
                 count = settings.getChunk();
+                if (plugin.isDebug()) plugin.logDebug("Cancelled placement of " + event.getEntityType() + " at " + event.getEntity().getLocation() + " due to chunk count");
             } else if (settings.getCount() > -1 && settings.getRadius() > 0
                     && plugin.getPlatformAdapter().getNearbyEntitiesByType(event.getEntity().getLocation(), event.getEntity().getType().getEntityClass(), settings.getRadius()).size() > settings.getCount()) {
                 count = settings.getCount();
+                if (plugin.isDebug()) plugin.logDebug("Cancelled placement of " + event.getEntityType() + " at " + event.getEntity().getLocation() + " due to radius " + settings.getRadius() + " count");
             }
             if (count > -1) {
                 event.setCancelled(true);
